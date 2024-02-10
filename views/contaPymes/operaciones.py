@@ -8,7 +8,7 @@ from views.contaPymes.authentication import authentication
 
 config = load_dotenv()
 
-def getbyordernumber(request):
+def getoperaciones(request):
     keyagent = authentication(request)
     if keyagent.status_code == 200:   
         
@@ -17,25 +17,40 @@ def getbyordernumber(request):
 
         if controlkey is not None:
 
-            snumsop = request.GET.get('doctoerp', None)
-
             URLUBICACION = os.getenv("URLUBICACION")
-            URLFUNCION = '/TCatOperaciones/"DoExecuteOprAction"/'
+            URLFUNCION = '/TCatOperaciones/"GetListaOperaciones"/'
             URL = URLUBICACION + URLFUNCION
             IAPP = os.getenv("IAPP")
 
             datajson = {
-                'accion': "LOAD",
-                'operaciones': [
-                    {
-                    'itdoper': 'ORD1',
-                    'snumsop': snumsop
-                    },
+                "datospagina": {
+                    "cantidadregistros": "20",
+                    "pagina": "1"
+                },
+                "camposderetorno": [
+                    "itdoper",
+                    "inumoper",
+                    "tdetalle",
+                    "fcreacion",
+                    "ncorto",
+                    "iestado",
+                    "ntdsop",
+                    "ntercero",
+                    "iprocess",
+                    "fsoport",
+                    "snumsop",
+                    "qerror",
+                    "qwarning",
+                    "banulada",
+                    "mingresos",
+                    "megresos",
+                    "mtotaloperacion"
                 ],
             }
+                
 
-            jsonsend = {
-                '_parameters': [datajson, controlkey, IAPP, "0"],
+            jsonsend ={ 
+                "_parameters" : [ datajson, controlkey, IAPP ,"0" ] 
             }
 
             response = requests.post(URL, json=jsonsend)
@@ -43,12 +58,9 @@ def getbyordernumber(request):
             try:
                 data = response.json()
                 if data:
-                    pedido = data.get('result', [])[0].get('respuesta', {}).get('datos', {})
-                    return JsonResponse({'pedido': pedido})
+                    return JsonResponse({'data': data})
                 else:
                     return JsonResponse({'Error': 'No data'}, status=500)
             except Exception as e:
                 return JsonResponse({'Error': f'Request error: {str(e)}'}, status=500)
 
-    else:
-        return JsonResponse({'Error': 'authentication request error'}, keyagent.status_code)

@@ -16,30 +16,50 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from views.connekta_siesa.jsons.inventario import inventario
+from views.contaPymes.art import getart, postart
 from views.contaPymes.authentication import authentication
 from views.connekta_siesa.jsons.requisicion1 import requesicion1
 from views.connekta_siesa.jsons.requisicion2 import requesicion2
 from views.connekta_siesa.jsons.requisicion3 import requesicion3
 from views.connekta_siesa.peticiones.conectores_importar import conectores_importar
-from views.contaPymes.dpk import postdpk
+from views.contaPymes.clientes import getclientes
+from views.contaPymes.clt import getclt, postclt
+from views.contaPymes.dpk import getdpk, getepk, postdpk
 from views.contaPymes.epk import getepk, postepk
 from views.connekta_siesa.jsons.generar_recibo import generar_recibo
+from views.contaPymes.getsql import getsql
 from views.contaPymes.inventoryOperation import getbyordernumber
 from views.connekta_siesa.peticiones.validar_entrada_compra import validar_entrada_compra
+from views.contaPymes.operaciones import getoperaciones
+from views.contaPymes.pedido import createpedido
+from views.contaPymes.productos import getproductos
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('authentication/', authentication),
     path('getByOrderNumber/', getbyordernumber),
-    path('epk/post/<str:snumsop>/', postepk),
-    path('epk/get', getepk),
-    path('dpk/post', postdpk),
+    
+    path('dpk/get/', getdpk),
+    path('dpk/post/', postdpk),
+    path('clt/get/', getclt),
+    path('clt/post/', postclt),
+    path('epk/get/', getepk),
+    path('epk/post/', postepk),
+    path('art/get/', getart),
+    path('art/post/', postart),
+    path('pedido/create/', createpedido),
+
+    path('getproductos/', getproductos),
+    path('getclientes/', getclientes),
     
     path('validar_entrada_compra/', validar_entrada_compra),
     path('generar_recibo/', generar_recibo),
     path('conectores_importar/', conectores_importar),
 
-    path('requisicion1/', requesicion1),
-    path('requisicion2/', requesicion2),
-    path('requisicion3/', requesicion3),
+    path('requisicion1json/', requesicion1),
+    path('requisicion2json/', requesicion2),
+    path('requisicion3json/', requesicion3),
+    path('inventariojson/', inventario),
+
 ]

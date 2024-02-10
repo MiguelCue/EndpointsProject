@@ -10,10 +10,11 @@ def conectores_importar(request):
     idinterface = request.GET.get('idInterface', None)
     iddocumento = request.GET.get('idDocumento', None)
     nombredocumento = request.GET.get('nombreDocumento', None)
-    
-    URL = "https://connektaqa.siesacloud.com/api/v3/conectoresimportar"
 
-    if idcompania:
+    #URL = "https://connektaqa.siesacloud.com/api/v3/conectoresimportar"
+    URL = "https://connektaqa.siesacloud.com/api/v3/conectoresimportar?idCompania=5896&idInterface=2622&idDocumento=168656&nombreDocumento=05_Wms_Docto_Entrada_Inventario"
+
+    '''if idcompania:
         URL +=  f"?idCompania={idcompania}"
 
     if idinterface:
@@ -23,7 +24,7 @@ def conectores_importar(request):
         URL += f"&idDocumento={iddocumento}"
 
     if nombredocumento:
-        URL += f"&nombreDocumento={nombredocumento}"
+        URL += f"&nombreDocumento={nombredocumento}"'''
 
     headers = {
         'Authorization': os.getenv("APIKEYSIESA")
@@ -32,7 +33,8 @@ def conectores_importar(request):
     response = requests.get(URL, headers=headers)
 
     try:
-        data = response.json()
+        data = response.content
+        print(data)
         if data:
             return JsonResponse({'idCompania': idcompania,
                          'idInterface': idinterface,
@@ -41,6 +43,6 @@ def conectores_importar(request):
                          'Url': URL
             })
         else:
-            return JsonResponse({'Error': 'No data'}, status=500)
+            return JsonResponse({'Error': 'No data'}, status=response.status_code)
     except Exception as e:
         return JsonResponse({'Error': f'Request error: {str(e)}'}, status=500)
