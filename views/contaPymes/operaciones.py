@@ -22,36 +22,80 @@ def getoperaciones(request):
             URL = URLUBICACION + URLFUNCION
             IAPP = os.getenv("IAPP")
 
-            datajson = {
-                "datospagina": {
-                    "cantidadregistros": "20",
-                    "pagina": "1"
-                },
-                "camposderetorno": [
-                    "itdoper",
-                    "inumoper",
-                    "tdetalle",
-                    "fcreacion",
-                    "ncorto",
-                    "iestado",
-                    "ntdsop",
-                    "ntercero",
-                    "iprocess",
-                    "fsoport",
-                    "snumsop",
-                    "qerror",
-                    "qwarning",
-                    "banulada",
-                    "mingresos",
-                    "megresos",
-                    "mtotaloperacion"
-                ],
-            }
+            # datajson = {
+            #     "datospagina": {
+            #         "cantidadregistros": "20",
+            #         "pagina": "1"
+            #     },
+            #     "camposderetorno": [
+            #         "itdoper",
+            #         "inumoper",
+            #         "tdetalle",
+            #         "fcreacion",
+            #         "ncorto",
+            #         "iestado",
+            #         "ntdsop",
+            #         "ntercero",
+            #         "iprocess",
+            #         "fsoport",
+            #         "snumsop",
+            #         "qerror",
+            #         "qwarning",
+            #         "banulada",
+            #         "mingresos",
+            #         "megresos",
+            #         "mtotaloperacion"
+            #     ],
+            #     "itdoper": [
+            #         "ORD1"
+            #     ]
+            # }
                 
 
-            jsonsend ={ 
-                "_parameters" : [ datajson, controlkey, IAPP ,"0" ] 
+            # jsonsend ={ 
+            #     "_parameters" : [ datajson, controlkey, IAPP ,"0" ] 
+            # }
+
+            jsonsend = {
+            "_parameters": [
+                {
+                    "datospagina": {
+                        "cantidadregistros": "20",
+                        "pagina": "1"
+                    },
+                    "camposderetorno": [
+                        "itdoper",
+                        "inumoper",
+                        "tdetalle",
+                        "fcreacion",
+                        "ncorto",
+                        "iestado",
+                        "ntdsop",
+                        "ntercero",
+                        "iprocess",
+                        "fsoport",
+                        "snumsop",
+                        "qerror",
+                        "qwarning",
+                        "banulada",
+                        "mingresos",
+                        "megresos",
+                        "mtotaloperacion"
+                    ],
+                    "ordenarpor": {
+                        "fsoport": "desc"
+                    },
+                    "datosfiltro": {},
+                    "itdoper": [
+                        "ORD1"
+                    ]
+                },
+                controlkey,
+                IAPP,
+                "0"
+                ]
             }
+
 
             response = requests.post(URL, json=jsonsend)
 

@@ -21,9 +21,8 @@ def authentication(_):
         '_parameters': [datajson, '', IAPP, '0'],
     }
 
-    response = requests.post(URL, json=jsonsend)
-
     try:
+        response = requests.post(URL, json=jsonsend)
         if response.status_code == 200:
             data = response.json()
             result = data.get('result', [])
@@ -32,7 +31,7 @@ def authentication(_):
                 controlkey = response.get('keyagente', '')
                 return JsonResponse({'key_agente': controlkey})
             else:
-                return JsonResponse({'Error': 'No result'}, status=500)
+                return JsonResponse({'Error': 'Unable to obtain agent key'}, status=500)
         else:
             return JsonResponse({'Error': f'Request error: {response.status_code}'}, status=500)
     except Exception as e:

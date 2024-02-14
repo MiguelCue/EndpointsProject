@@ -28,7 +28,6 @@ from views.contaPymes.clt import getclt, postclt
 from views.contaPymes.dpk import getdpk, getepk, postdpk
 from views.contaPymes.epk import getepk, postepk
 from views.connekta_siesa.jsons.generar_recibo import generar_recibo
-from views.contaPymes.getsql import getsql
 from views.contaPymes.inventoryOperation import getbyordernumber
 from views.connekta_siesa.peticiones.validar_entrada_compra import validar_entrada_compra
 from views.contaPymes.operaciones import getoperaciones
@@ -49,6 +48,7 @@ urlpatterns = [
     path('art/get/', getart),
     path('art/post/', postart),
     path('pedido/create/', createpedido),
+    path('getoperaciones/', getoperaciones),
 
     path('getproductos/', getproductos),
     path('getclientes/', getclientes),

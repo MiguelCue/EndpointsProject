@@ -1,12 +1,12 @@
 from django.http import JsonResponse
+from django.utils import timezone 
 from dotenv import load_dotenv
+from json import loads
 import requests
 import os
-from json import loads
-from django.utils import timezone 
-
 
 config = load_dotenv()
+APIKEY = os.getenv('APIKEY')
 
 def getart(request):
     url = "https://api.copernicowms.com/wms/art"
@@ -17,7 +17,7 @@ def getart(request):
 
     headers = {
         "Accept": "application/json",
-        "Authorization": os.getenv('APIKEY')
+        "Authorization": APIKEY
     }
 
     response = requests.get(url, headers=headers)
@@ -34,7 +34,7 @@ def postart(request):
     headers = {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "Authorization": os.getenv('APIKEY')
+        "Authorization": APIKEY
     }
 
     art = request.GET.get('art', {})
@@ -86,7 +86,7 @@ def postart(request):
         "estado": 1,
         "alergenos": None
     }
-
+    #return JsonResponse({'art': payload})
     response = requests.post(url, json=payload, headers=headers)
 
     if response.status_code == 200:

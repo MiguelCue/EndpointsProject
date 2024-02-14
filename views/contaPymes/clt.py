@@ -1,16 +1,15 @@
-from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+from django.utils import timezone
 from dotenv import load_dotenv
 from json import loads
 import requests
 import os
-from django.utils import timezone
 
 config = load_dotenv()
-APIKEY = 'vPRLHH1Bx)gg51-iiza5c#dJ}Lp&e1edjBgbQjX!VUBmMRcNW=9JTQ!3taFmymu%NZy;ki*D]jM630%dA1'
+APIKEY = os.getenv('APIKEY')
+
 def getclt(request):
     item = request.GET.get('item', None)
-    
     url = 'https://api.copernicowms.com/wms/clt'
 
     if item:
@@ -55,7 +54,7 @@ def postclt(request):
     idepartamento = clt.get('idepartamento', None)
     iciudad = clt.get('iciudad', None)
     notas = clt.get('sobservaciones', None)
-    
+    fecha_actual = timezone.now().isoformat()
 
     payload = {
         "nit": item,
@@ -73,7 +72,7 @@ def postclt(request):
         "codciudaddestino": iciudad,
         "coddptodestino": idepartamento,
         "codpaisdestino": ipais,
-        "fecharegistro": None,
+        "fecharegistro": fecha_actual,
         "telefono": contacto,
         "cuidad": ciudad,
         "cuidaddespacho": None,

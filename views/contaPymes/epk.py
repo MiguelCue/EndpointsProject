@@ -1,4 +1,3 @@
-from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from dotenv import load_dotenv
 from json import loads
@@ -10,12 +9,10 @@ from views.contaPymes.clt import getclt, postclt
 from views.contaPymes.inventoryOperation import getbyordernumber
 
 config = load_dotenv()
-
-APIKEY = 'vPRLHH1Bx)gg51-iiza5c#dJ}Lp&e1edjBgbQjX!VUBmMRcNW=9JTQ!3taFmymu%NZy;ki*D]jM630%dA1'
+APIKEY = os.getenv('APIKEY')
 
 def getepk(request):
     doctoerp = request.GET.get('doctoerp', None)
-    
     url = 'https://api.copernicowms.com/wms/epk'
 
     if doctoerp:
@@ -38,13 +35,24 @@ def getepk(request):
         return JsonResponse({'Error': response.status_code, 'text': response.text})
 
 
-@csrf_exempt
 def postepk(request):
     url = 'https://api.copernicowms.com/wms/epk'
     new_request = type('Request', (), {})()
+    doctoerp = request.GET.get('doctoerp', None)
+    print(APIKEY)
+    epkjson = getepk(request)
+    epk = loads(epkjson.content).get('epk', {})
 
+    if epk:
+        print(f'Error: The Epk {doctoerp} already exist in WMS')
+        return JsonResponse({'Error': f'There is a EPK identified with: {doctoerp}'},  status=500) 
+    
     pedidojson = getbyordernumber(request)
     pedido = loads(pedidojson.content).get('pedido', {})
+
+    if not pedido:
+        print(f'Error: The order {doctoerp} does not exist in ContaPymes')
+        return JsonResponse({'Error': f'The order {doctoerp} does not exist in ContaPymes'}, status=500)
     
     encabezado = pedido.get("encabezado", {})
     snumsop = encabezado.get("snumsop", None)
@@ -112,7 +120,7 @@ def postepk(request):
     payload = {
         "tipodocto": "FLT",
         "doctoerp": snumsop,
-        "numpedido": inumoper,
+        "numpedido": snumsop,
         "fechaplaneacion": None,
         "f_pedido": fprocesam,
         "item": init,
@@ -139,7 +147,7 @@ def postepk(request):
         "estadoerp": iprocess,
         "picking_batch": None,
         "field_condicionpago": None,
-        "field_documentoreferencia": None,
+        "field_documentoreferencia": inumoper,
         "bodega": iinventario,
         "vendedor2": None,
         "numguia": None,
@@ -160,4 +168,4 @@ def postepk(request):
     else:
         return JsonResponse({'Error': response.status_code, 'text': response.text, 'payload': payload})
     
- 
+    

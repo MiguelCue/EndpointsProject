@@ -1,7 +1,7 @@
 import requests
 if __name__ == "__main__":
     
-    c = '44599'
+    c = '44670'
     d = '44700'
     # while True:
     # for i in array:

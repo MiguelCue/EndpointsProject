@@ -10,45 +10,40 @@ config = load_dotenv()
 
 def getbyordernumber(request):
     keyagent = authentication(request)
-    if keyagent.status_code == 200:   
-        
-        keydata = loads(keyagent.content)
-        controlkey = keydata.get('key_agente', None) 
+    keydata = loads(keyagent.content)
+    controlkey = keydata.get('key_agente', None) 
 
-        if controlkey is not None:
+    if controlkey is not None:
+        snumsop = request.GET.get('doctoerp', None)
+        URLUBICACION = os.getenv("URLUBICACION")
+        URLFUNCION = '/TCatOperaciones/"DoExecuteOprAction"/'
+        URL = URLUBICACION + URLFUNCION
+        IAPP = os.getenv("IAPP")
 
-            snumsop = request.GET.get('doctoerp', None)
+        datajson = {
+            'accion': "LOAD",
+            'operaciones': [
+                {
+                'itdoper': 'ORD1',
+                'snumsop': snumsop
+                },
+            ],
+        }
 
-            URLUBICACION = os.getenv("URLUBICACION")
-            URLFUNCION = '/TCatOperaciones/"DoExecuteOprAction"/'
-            URL = URLUBICACION + URLFUNCION
-            IAPP = os.getenv("IAPP")
+        jsonsend = {
+            '_parameters': [datajson, controlkey, IAPP, "0"],
+        }
 
-            datajson = {
-                'accion': "LOAD",
-                'operaciones': [
-                    {
-                    'itdoper': 'ORD1',
-                    'snumsop': snumsop
-                    },
-                ],
-            }
-
-            jsonsend = {
-                '_parameters': [datajson, controlkey, IAPP, "0"],
-            }
-
+        try:
             response = requests.post(URL, json=jsonsend)
-
-            try:
-                data = response.json()
-                if data:
-                    pedido = data.get('result', [])[0].get('respuesta', {}).get('datos', {})
-                    return JsonResponse({'pedido': pedido})
-                else:
-                    return JsonResponse({'Error': 'No data'}, status=500)
-            except Exception as e:
-                return JsonResponse({'Error': f'Request error: {str(e)}'}, status=500)
-
+            data = response.json()
+            pedido = data.get('result', [])[0].get('respuesta', {}).get('datos', {})
+            operationnum = pedido.get('encabezado', {}).get('snumsop', None)
+            if operationnum:
+                return JsonResponse({'pedido': pedido}, status=200)
+            else:
+                return JsonResponse({'Error': f'The order {snumsop} does not exist'}, status=500)
+        except Exception as e:
+            return JsonResponse({'Error': f'Request error: {str(e)}'}, status=500)
     else:
-        return JsonResponse({'Error': 'authentication request error'}, keyagent.status_code)
+        return JsonResponse({'Error': 'User authentication failed'}, status=403)

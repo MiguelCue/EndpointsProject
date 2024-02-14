@@ -14,7 +14,7 @@ config = load_dotenv()
 def createpedido(request):
     epkjson = getepk(request)
     epk = loads(epkjson.content).get('epk', {})
-    
+    clt = {}
     if not epk:
         epkjson = postepk(request)
         epk = loads(epkjson.content).get('epk', {})

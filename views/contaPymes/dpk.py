@@ -1,25 +1,24 @@
+from django.utils import timezone 
 from django.http import JsonResponse
 from dotenv import load_dotenv
+from json import loads
 import requests
 import os
-from json import loads
-from views.contaPymes.art import getart, postart
-from views.contaPymes.epk import getepk
-from django.utils import timezone 
 
 from views.contaPymes.inventoryOperation import getbyordernumber
 from views.contaPymes.productos import getproductos
+from views.contaPymes.art import getart, postart
+from views.contaPymes.epk import getepk
 
 config = load_dotenv()
-
-APIKEY = 'vPRLHH1Bx)gg51-iiza5c#dJ}Lp&e1edjBgbQjX!VUBmMRcNW=9JTQ!3taFmymu%NZy;ki*D]jM630%dA1'
+APIKEY = os.getenv('APIKEY')
 
 def getdpk(request):
-    productoean = request.GET.get('productoean', None)
+    doctoerp = request.GET.get('doctoerp', None)
     url = 'https://api.copernicowms.com/wms/dpk'
 
-    if productoean:
-        url += f"?productoean={productoean}"
+    if doctoerp:
+        url += f"?doctoerp={doctoerp}"
 
     headers = {
         "Accept": "application/json",
@@ -37,23 +36,35 @@ def getdpk(request):
 def postdpk(request):
     url = "https://api.copernicowms.com/wms/dpk"
     new_request = type('Request', (), {})() # Crear un objeto request vacío
-
     headers = {
         "Content-Type": "application/json",
         "Accept": "application/json",
         "Authorization": APIKEY
     }
-
     doctoerp = request.GET.get('doctoerp', None)
+
+    dpkjson = getdpk(request)
+    dpk = loads(dpkjson.content).get('dpk', {})
+    if dpk:
+        print(f'Error: The DPK {doctoerp} exist in WMS')
+        return JsonResponse({'Error': f'There is a DPK identified with: {doctoerp}',
+                             'dpk': dpk}, status=500) 
+
     epkjson = getepk(request)
     epk = loads(epkjson.content).get('epk', {})
 
     if not epk:
-        return JsonResponse({'Error': f'There is no a EPK identified with "doctoerp": {doctoerp}'}) 
+        print(f'Error: The Epk {doctoerp} does not exist in WMS')
+        return JsonResponse({'Error': f'There is no a EPK identified with: {doctoerp}'}) 
     
-    invope = getbyordernumber(request)
-    invopedata = loads(invope.content).get('pedido', {})
-    listaproductos = invopedata.get('listaproductos', [])
+    pedidojson = getbyordernumber(request)
+    pedido = loads(pedidojson.content).get('pedido', {})
+
+    if not pedido:
+        print(f'Error: The order {doctoerp} does not exist in ContaPymes')
+        return JsonResponse({'Error': f'The order {doctoerp} does not exist in ContaPymes'}, status=500)
+    
+    listaproductos = pedido.get('listaproductos', [])
     picking = epk.get('picking', None)
     tipodocto = epk.get('tipodocto', None)
     numpedido = epk.get('numpedido', None)
@@ -61,9 +72,12 @@ def postdpk(request):
     fecharegistro = epk.get('fecharegistro', None)
     fecha_actual = timezone.now().isoformat()
     
+    #pedidoanterior = _getpedidoanterior(doctoerp)
+    #return JsonResponse({'anterior': pedidoanterior})
+    
     dpk = []
 
-    i = 4038392
+    i = 4039018
     for producto in listaproductos:
         irecurso = producto.get('irecurso', None) # Código producto
         qrecurso = producto.get('qrecurso', None) # Cantidad
@@ -71,47 +85,48 @@ def postdpk(request):
         mvrtotal = producto.get('mvrtotal', None)
         costo = producto.get('mprecio', None)
 
-        setattr(new_request, 'GET', {'irecurso': irecurso})
-        productojson = getproductos(new_request)
-        producto = loads(productojson.content).get('producto', )[0]
-        
-        clase1 = producto.get('clase1', "")
-        clase2 = producto.get('clase2', "")
-        tipo1 = producto.get('tipo1', "")
-        tipo2 = producto.get('tipo2', "")
-        
-        descripcion = producto.get('nrecurso', None)
-        observacion = producto.get('sobservaciones', None)
-        # nunidad = producto.get('nunidad', None)
-        # qfactor = producto.get('qfactor', None)
+        setattr(new_request, 'GET', {'productoean': irecurso})
+        artjson = getart(new_request)
+        art = loads(artjson.content).get('art', [])
 
-        # setattr(new_request, 'GET', {'productoean': irecurso})
-        # artjson = getart(new_request)
-        # art = loads(artjson.content).get('art', [])
-
-        # if art:
-        #     descripcion = art[0].get('descripcion', None)
-        #     costo = art[0].get('costo', None)
-        #     observacion = art[0].get('observacion', None)
-        # else:
-        #     descripcion = producto.get('nrecurso', None)
-        #     observacion = producto.get('sobservaciones', None)
-        #     nunidad = producto.get('nunidad', None)
-        #     qfactor = producto.get('qfactor', None)
+        if art:
+            descripcion = art[0].get('descripcion', None)
+            costo = art[0].get('costo', None)
+            observacion = art[0].get('observacion', None)
+            descripcionco = art[0].get('descripcionco', None)
             
-        #     setattr(new_request, 'GET', {'art' : {
-        #                                     'irecurso': irecurso,
-        #                                     'descripcion': descripcion,
-        #                                     'costo': costo,
-        #                                     'nunidad': nunidad,
-        #                                     'qfactor': qfactor,
-        #                                     'iinventario': iinventario,
-        #                                     'sobservaciones': observacion,
-        #                                     }})
-        #     responseart = postart(new_request)
-        #     art = loads(responseart.content).get('art', {})
-            
+        else:
+            setattr(new_request, 'GET', {'irecurso': irecurso})
+            productojson = getproductos(new_request)
+            producto = loads(productojson.content).get('producto', )[0]
 
+            if not producto:
+                print(f'Error: The item {irecurso} does not exist in ContaPymes')
+                return JsonResponse({'Error': f'The order {doctoerp} does not exist in ContaPymes'}, status=500)
+
+            clase1 = producto.get('clase1', "")
+            clase2 = producto.get('clase2', "")
+            tipo1 = producto.get('tipo1', "")
+            tipo2 = producto.get('tipo2', "")
+            descripcion = producto.get('nrecurso', None)
+            observacion = producto.get('sobservaciones', None)
+            descripcion = producto.get('nrecurso', None)
+            nunidad = producto.get('nunidad', None)
+            qfactor = producto.get('qfactor', None)
+            descripcionco =  clase1 + " " + clase2 + " " + tipo1 + " " + tipo2
+            
+            setattr(new_request, 'GET', {'art' : {
+                                            'irecurso': irecurso,
+                                            'descripcion': descripcion,
+                                            'costo': costo,
+                                            'nunidad': nunidad,
+                                            'qfactor': qfactor,
+                                            'iinventario': iinventario,
+                                            'sobservaciones': observacion,
+                                            }})
+            responseart = postart(new_request)
+            art = loads(responseart.content).get('art', {})
+        
         payload = {
             "referencia": irecurso,
             "refpadre": irecurso,
@@ -138,7 +153,7 @@ def postdpk(request):
             "qtyfacturado": None,
             "preciounitario": costo,
             "notasitem": observacion,
-            "descripcionco": clase1 + " " + clase2 + " " + tipo1 + " " + tipo2,
+            "descripcionco":descripcionco,
             "factor": 0,
             "numpedido": numpedido,
             "pedproveedor": "NA",
@@ -149,13 +164,19 @@ def postdpk(request):
 
         i += 1
         print(payload)
-        dpk.append({'dpk': payload})
+        dpk.append({'dpk': payload,
+                    'art': art})
         
         response = requests.post(url, json=payload, headers=headers)
+
+        if response.status_code != 200:
+            return JsonResponse({'Error': 'DPK creation failed',
+                                 'dpk': payload,
+                                 'art': art})
         # return JsonResponse({'status': response.status_code,
         #                      'data': response.json(),
         #                      'dpk': payload}) 
-
+    #return JsonResponse({'data': dpk})
     if dpk:
         return JsonResponse({'data': dpk})
     else:

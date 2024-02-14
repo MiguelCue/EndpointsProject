@@ -1,0 +1,14 @@
+asgiref==3.7.2
+certifi==2024.2.2
+charset-normalizer==3.3.2
+daemonize==2.5.0
+Django==5.0.2
+docutils==0.20.1
+idna==3.6
+lockfile==0.12.2
+python-daemon==3.0.1
+python-dotenv==1.0.1
+requests==2.31.0
+sqlparse==0.4.4
+tzdata==2023.4
+urllib3==2.2.0
