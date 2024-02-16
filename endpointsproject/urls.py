@@ -36,9 +36,15 @@ from views.contaPymes.productos import getproductos
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # Endpoints conexion y obtencion de informacion de ContaPymes
     path('authentication/', authentication),
     path('getByOrderNumber/', getbyordernumber),
-    
+    path('getoperaciones/', getoperaciones),
+    path('getproductos/', getproductos),
+    path('getclientes/', getclientes),
+
+    # Endpoints para el WMS
     path('dpk/get/', getdpk),
     path('dpk/post/', postdpk),
     path('clt/get/', getclt),
@@ -47,12 +53,9 @@ urlpatterns = [
     path('epk/post/', postepk),
     path('art/get/', getart),
     path('art/post/', postart),
-    path('pedido/create/', createpedido),
-    path('getoperaciones/', getoperaciones),
-
-    path('getproductos/', getproductos),
-    path('getclientes/', getclientes),
+    path('createpedido/', createpedido),
     
+    # Endpoints SIESA
     path('validar_entrada_compra/', validar_entrada_compra),
     path('generar_recibo/', generar_recibo),
     path('conectores_importar/', conectores_importar),
